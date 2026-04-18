@@ -9,10 +9,13 @@ app = Flask(__name__)
 MODEL_PATH = "/app/models/wine_model.pkl"
 LOG_PATH = "/app/logs/predictions.log"
 
-model = None
 
 # TODO: Load the trained model from the shared volume. Use joblib.load() with MODEL_PATH
-model = joblib.load(MODEL_PATH)
+if os.path.exists(MODEL_PATH):
+    model = joblib.load(MODEL_PATH)
+else:
+    model = None
+    print("WARNING: Model file not found. Service will start in unhealthy state.")
 
 # Wine feature names for reference (13 features):
 # alcohol, malic_acid, ash, alcalinity_of_ash, magnesium, total_phenols,
@@ -21,11 +24,13 @@ model = joblib.load(MODEL_PATH)
 
 @app.route('/predict', methods=['POST'])
 def predict():
+    
+    global model
+    
     try:
         # TODO: Get the input array from the request JSON body
         # The request body should have a key "input" with a list of 13 feature values
-        global model
-        
+                
         data = request.get_json()
         features = data.get("input")
 
